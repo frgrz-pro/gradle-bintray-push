@@ -1,5 +1,24 @@
-gradle-mvn-push
+gradle-bintray-push
 ===============
+
+This fork is just some small modifications to Chris Banes original gradle-mvn-push script.
+The differences here are:
+- Release upload goes to bintray.com (jcenter)
+- Snapshot upload goes to oss.jfrog.org (oss-snapshot-local)
+- Added option to modify VERSION_NAME from environment variables (useful for CI)
+- Added option to use username, password from environment variables (useful for CI)
+- Fixes the JavaDoc generation (https://github.com/chrisbanes/gradle-mvn-push/pull/51)
+
+To use those environment variables on CI just export them
+
+```
+export NEXUS_USERNAME=<your bintray username>
+export NEXUS_PASSWORD=<your bintray api key>
+export VERSION_NAME_EXTRAS=-RC1
+```
+
+Below is the original readme with adjustments for those params
+============
 
 See this blog post for more context on this 'library': [http://chris.banes.me/2013/08/27/pushing-aars-to-maven-central/](http://chris.banes.me/2013/08/27/pushing-aars-to-maven-central/).
 
@@ -16,12 +35,19 @@ This will include the username and password to upload to the Maven server and so
 It may also include your signing key id, password, and secret key ring file (for signed uploads).  Signing is only necessary if you're putting release builds of your project on maven central.
 
 ```properties
-NEXUS_USERNAME=chrisbanes
-NEXUS_PASSWORD=g00dtry
+NEXUS_USERNAME=<your bintray username>
+NEXUS_PASSWORD=<your bintray api key>
 
 signing.keyId=ABCDEF12
 signing.password=n1c3try
 signing.secretKeyRingFile=~/.gnupg/secring.gpg
+```
+
+#### 2.1 Alternative, use environment variables
+
+```
+export NEXUS_USERNAME=<your bintray username>
+export NEXUS_PASSWORD=<your bintray api key>
 ```
 
 ### 3. Create project root gradle.properties
@@ -46,7 +72,18 @@ POM_DEVELOPER_NAME=Chris Banes
 
 The `VERSION_NAME` value is important. If it contains the keyword `SNAPSHOT` then the build will upload to the snapshot server, if not then to the release server.
 
-### 4. Create gradle.properties in each sub-project
+
+### 4. Modify the version name from environment variables
+
+If there's an environment variables called `VERSION_NAME_EXTRAS`, its value will get appended at the end of VERSION_NAME.
+This can be very powerful when running from CI. For example, to have one SNAPSHOT per branch, you could
+
+```
+export VERSION_NAME_EXTRAS=-master-SNAPSHOT
+```
+in this case it will be uploaded to the snapshot server and indicates it's from the master branch.
+
+### 5. Create gradle.properties in each sub-project
 The values in this file are specific to the sub-project (and override those in the root `gradle.properties`). In this example, this is just the name, artifactId and packaging type:
 
 ```properties
@@ -60,7 +97,7 @@ POM_PACKAGING=aar
 Add the following at the end of each `build.gradle` that you wish to upload:
 
 ```groovy
-apply from: 'https://raw.github.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'
+apply from: 'https://raw.githubusercontent.com/sensorberg-dev/gradle-bintray-push/master/gradle-bintray-push.gradle'
 ```
 
 ### 6. Build and Push
@@ -70,15 +107,10 @@ You can now build and push:
 ```bash
 $ gradle clean build uploadArchives
 ```
-	
+
 ### Other Properties
 
-There are other properties which can be set:
-
-```
-RELEASE_REPOSITORY_URL (defaults to Maven Central's staging server)
-SNAPSHOT_REPOSITORY_URL (defaults to Maven Central's snapshot server)
-```
+`RELEASE_REPOSITORY_URL` and `SNAPSHOT_REPOSITORY_URL` got removed from the original script
 
 ## License
 

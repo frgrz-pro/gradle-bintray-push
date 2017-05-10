@@ -18,25 +18,38 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 def isReleaseBuild() {
-    return VERSION_NAME.contains("SNAPSHOT") == false
+    return getVersionName().contains("SNAPSHOT") == false
+}
+
+def getVersionName() {
+    if (System.getenv().containsKey('VERSION_NAME_EXTRAS')) {
+        return VERSION_NAME + System.getenv('VERSION_NAME_EXTRAS');
+    } else {
+        return VERSION_NAME;
+    }
 }
 
 def getReleaseRepositoryUrl() {
-    return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
-            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+    // https://bintray.com/api/v1/maven/{NEXUS_USERNAME}/maven/{POM_ARTIFACT_ID}/;publish=1
+    return "https://bintray.com/api/v1/maven/" +
+            getRepositoryUsername() +
+            "/maven/" +
+            POM_ARTIFACT_ID +
+            "/;publish=1"
 }
 
 def getSnapshotRepositoryUrl() {
-    return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
-            : "https://oss.sonatype.org/content/repositories/snapshots/"
+    return "http://oss.jfrog.org/artifactory/oss-snapshot-local"
 }
 
 def getRepositoryUsername() {
-    return hasProperty('NEXUS_USERNAME') ? NEXUS_USERNAME : ""
+    if (System.getenv().containsKey('NEXUS_USERNAME')) return System.getenv('NEXUS_USERNAME')
+    else return hasProperty('NEXUS_USERNAME') ? NEXUS_USERNAME : ""
 }
 
 def getRepositoryPassword() {
-    return hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : ""
+    if (System.getenv().containsKey('NEXUS_PASSWORD')) return System.getenv('NEXUS_PASSWORD')
+    else return hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : ""
 }
 
 afterEvaluate { project ->
@@ -47,7 +60,7 @@ afterEvaluate { project ->
 
                 pom.groupId = GROUP
                 pom.artifactId = POM_ARTIFACT_ID
-                pom.version = VERSION_NAME
+                pom.version = getVersionName()
 
                 repository(url: getReleaseRepositoryUrl()) {
                     authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
@@ -95,6 +108,9 @@ afterEvaluate { project ->
     task androidJavadocs(type: Javadoc) {
         source = android.sourceSets.main.java.srcDirs
         classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+        options.addStringOption('Xdoclint:none', '-quiet')
+        options.addStringOption('encoding', 'UTF-8')
+        options.addStringOption('charSet', 'UTF-8')
     }
 
     task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
