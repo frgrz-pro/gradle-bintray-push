@@ -8,6 +8,7 @@ The differences here are:
 - Added option to modify VERSION_NAME from environment variables (useful for CI)
 - Added option to use username, password from environment variables (useful for CI)
 - Fixes the JavaDoc generation (https://github.com/chrisbanes/gradle-mvn-push/pull/51)
+- Added local maven support (https://github.com/chrisbanes/gradle-mvn-push/pull/41)
 
 To use those environment variables on CI just export them
 
@@ -100,13 +101,35 @@ Add the following at the end of each `build.gradle` that you wish to upload:
 apply from: 'https://raw.githubusercontent.com/sensorberg-dev/gradle-bintray-push/master/gradle-bintray-push.gradle'
 ```
 
-### 6. Build and Push
+### 6. Build
 
-You can now build and push:
+You can now build and push to jfrog/jcenter
 
 ```bash
 $ gradle clean build uploadArchives
 ```
+
+Build and install on local Maven
+```bash
+$ gradle clean build installArchives
+```
+### 7. Inter-module dependency
+If you modules have dependencies on each other (e.g. compile project(':other_module')), then you should do one of the following for proper POM generation
+
+- option A: top level build.gradle
+```groovy
+allprojects {
+    version = VERSION_NAME
+    group = GROUP
+}
+```
+- option B: top level gradle.properties
+```
+version=1.0.0
+group=<name here>
+```
+more info: https://stackoverflow.com/questions/45078381/gradle-library-with-multiple-modules
+
 
 ### Other Properties
 
