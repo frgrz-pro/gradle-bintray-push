@@ -34,7 +34,7 @@ def getReleaseRepositoryUrl() {
     return "https://bintray.com/api/v1/maven/" +
             getRepositoryUsername() +
             "/maven/" +
-            POM_ARTIFACT_ID +
+            POM_ARTIFACT_URL +
             "/;publish=1"
 }
 
