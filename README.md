@@ -9,6 +9,7 @@ The differences here are:
 - Added option to use username, password from environment variables (useful for CI)
 - Fixes the JavaDoc generation (https://github.com/chrisbanes/gradle-mvn-push/pull/51)
 - Added local maven support (https://github.com/chrisbanes/gradle-mvn-push/pull/41)
+- Added POM_ARTIFACT_URL optional property. This is makes to easier to have an artifact with one artifactId but the name on jcenter something else.
 
 To use those environment variables on CI just export them
 
@@ -90,6 +91,7 @@ The values in this file are specific to the sub-project (and override those in t
 ```properties
 POM_NAME=ActionBar-PullToRefresh Library
 POM_ARTIFACT_ID=library
+POM_ARTIFACT_URL=actionbar-library
 POM_PACKAGING=aar
 ```
 
